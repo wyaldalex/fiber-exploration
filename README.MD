@@ -1,1 +1,1 @@
-# Golang Fiberframework Exploration
+# Golang Fiber Framework Exploration
