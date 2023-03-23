@@ -8,5 +8,5 @@ import (
 
 func Setup(app *fiber.App) {
 
-	app.Get("/", controllers.Hello)
+	app.Get("/", controllers.Register)
 }
