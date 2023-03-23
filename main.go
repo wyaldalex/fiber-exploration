@@ -1,9 +1,10 @@
 package main
 
 import (
+	"FiberAuth/database"
+	"FiberAuth/routes"
+
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 )
 
 /*
@@ -15,17 +16,9 @@ import (
 
 func main() {
 
-	_, err := gorm.Open(mysql.Open("root:root@/fiberauthdb"), &gorm.Config{})
-
-	if err != nil {
-		panic("could not connect to the database")
-	}
-
+	database.Connect()
 	app := fiber.New()
-
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Initial Project Setup")
-	})
+	routes.Setup(app)
 
 	app.Listen(":10001")
 }
