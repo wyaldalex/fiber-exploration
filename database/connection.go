@@ -11,7 +11,11 @@ import (
 Connecting to the mysql container and verify:
 docker exec -it mysqldb-fiber bash
 mysql -u root -p (check db password in docker-compose.yml)
+SHOW DATABASES;
+
 */
+
+var DB *gorm.DB
 
 func Connect() {
 
@@ -20,6 +24,8 @@ func Connect() {
 	if err != nil {
 		panic("could not connect to the database")
 	}
+
+	DB = connection
 
 	connection.AutoMigrate(&models.User{})
 }
