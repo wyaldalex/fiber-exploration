@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"FiberAuth/converter"
 	"FiberAuth/database"
 	"FiberAuth/models"
 	"strconv"
@@ -20,20 +21,54 @@ const SecretKey = "secretKey123"
 func Register(c *fiber.Ctx) error {
 	var data map[string]string
 
+	cookie := c.Cookies("jwt")
+
+	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(t *jwt.Token) (interface{}, error) {
+		return []byte(SecretKey), nil
+	})
+
+	if err != nil {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "unauthenticated",
+		})
+	}
+
+	claims := token.Claims.(*jwt.StandardClaims)
+
+	var user models.User
+	database.DB.Where("id = ?", claims.Issuer).First(&user)
+
 	if err := c.BodyParser(&data); err != nil {
 		return err
 	}
 
+	if user.Role != models.AdminRole {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "user is unauthorized for this operation",
+		})
+	}
+
+	role, error := converter.ParseRole((data["role"]))
+	if error != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"message": "Unable to properly parse data",
+		})
+	}
+
 	password, _ := bcrypt.GenerateFromPassword([]byte(data["password"]), 14)
-	user := models.User{
+	newUser := models.User{
 		Name:     data["name"],
 		Email:    data["email"],
+		Role:     role,
 		Password: password,
 	}
 
-	database.DB.Create(&user)
+	database.DB.Create(&newUser)
 
-	return c.JSON(user)
+	return c.JSON(newUser)
 }
 
 func Login(c *fiber.Ctx) error {

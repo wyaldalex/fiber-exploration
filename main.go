@@ -27,5 +27,6 @@ func main() {
 
 	routes.Setup(app)
 
-	app.Listen(":10001")
+	//app.Listen(":10001")
+	app.Listen("127.0.0.1:10001") // add localhost to avoid firewall warning in development
 }
